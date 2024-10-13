@@ -1,11 +1,28 @@
-import 'package:event_app/models_event.dart';
+import 'package:event_app/screens_signup_screen.dart';
 import 'package:flutter/material.dart';
 import '../main.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+
+  void _handleLogin() {
+    if (_formKey.currentState!.validate()) {
+      // For demonstration purposes, we'll just navigate to the MainScreen
+      // In a real app, you would perform authentication here
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder: (context) => MainScreen(),
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,10 +50,17 @@ class LoginScreen extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: 'Email',
                     prefixIcon: Icon(Icons.email, color: Theme.of(context).primaryColor),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
+                  keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
+                    }
+                    if (!value.contains('@')) {
+                      return 'Please enter a valid email';
                     }
                     return null;
                   },
@@ -47,46 +71,40 @@ class LoginScreen extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: 'Password',
                     prefixIcon: Icon(Icons.lock, color: Theme.of(context).primaryColor),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
                     }
+                    if (value.length < 6) {
+                      return 'Password must be at least 6 characters long';
+                    }
                     return null;
                   },
                 ),
                 SizedBox(height: 24),
                 ElevatedButton(
-                  onPressed: () {
-                    if (_formKey.currentState!.validate()) {
-                      Navigator.of(context).pushReplacement(
-                        MaterialPageRoute(
-                          builder: (context) => MainScreen(
-                            events: [
-                              Event(
-                                title: 'Flutter Workshop',
-                                date: DateTime.now().add(Duration(days: 2)),
-                                time: TimeOfDay(hour: 14, minute: 0),
-                                location: 'Room 101',
-                                description: 'Learn how to build amazing mobile apps with Flutter!',
-                                imageUrl: 'https://picsum.photos/seed/flutter/400/200',
-                              ),
-                              Event(
-                                title: 'Campus Hackathon',
-                                date: DateTime.now().add(Duration(days: 5)),
-                                time: TimeOfDay(hour: 9, minute: 0),
-                                location: 'Student Center',
-                                description: 'Join us for a 24-hour coding challenge and win prizes!',
-                                imageUrl: 'https://picsum.photos/seed/hackathon/400/200',
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: _handleLogin,
                   child: Text('Login'),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.symmetric(vertical: 16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 16),
+                TextButton(
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (context) => SignUpScreen()),
+                    );
+                  },
+                  child: Text('Don\'t have an account? Sign Up'),
                 ),
               ],
             ),
@@ -94,5 +112,12 @@ class LoginScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
   }
 }

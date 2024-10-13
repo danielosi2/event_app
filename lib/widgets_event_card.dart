@@ -20,12 +20,7 @@ class EventCard extends StatelessWidget {
           children: [
             ClipRRect(
               borderRadius: BorderRadius.vertical(top: Radius.circular(12)),
-              child: Image.network(
-                event.imageUrl,
-                height: 150,
-                width: double.infinity,
-                fit: BoxFit.cover,
-              ),
+              child: _buildEventImage(),
             ),
             Padding(
               padding: const EdgeInsets.all(16.0),
@@ -43,16 +38,31 @@ class EventCard extends StatelessWidget {
                       SizedBox(width: 4),
                       Text(
                         '${event.date.toString().split(' ')[0]} at ${event.time.format(context)}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.grey[600]),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Icon(Icons.location_on, size: 16, color: Theme.of(context).colorScheme.secondary),
+                      SizedBox(width: 4),
+                      Expanded(
+                        child: Text(
+                          event.location,
+                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: Colors.grey[600]),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                     ],
                   ),
                   SizedBox(height: 8),
                   Text(
                     event.description,
+                    style: Theme.of(context).textTheme.bodyMedium,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
               ),
@@ -61,5 +71,30 @@ class EventCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Widget _buildEventImage() {
+    if (event.imageFile != null) {
+      return Image.file(
+        event.imageFile!,
+        height: 150,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    } else if (event.imageUrl != null) {
+      return Image.network(
+        event.imageUrl!,
+        height: 150,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    } else {
+      return Image.network(
+        'https://picsum.photos/seed/${event.title.hashCode}/800/400',
+        height: 150,
+        width: double.infinity,
+        fit: BoxFit.cover,
+      );
+    }
   }
 }

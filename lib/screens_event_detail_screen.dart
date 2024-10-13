@@ -1,4 +1,5 @@
 import 'package:event_app/models_event.dart';
+import 'package:event_app/notification.dart';
 import 'package:flutter/material.dart';
 
 class EventDetailScreen extends StatefulWidget {
@@ -12,13 +13,15 @@ class EventDetailScreen extends StatefulWidget {
 }
 
 class _EventDetailScreenState extends State<EventDetailScreen> {
+  bool isFavorite = false;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
           SliverAppBar(
-            expandedHeight: 200.0,
+            expandedHeight: 300.0,
             floating: false,
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
@@ -28,25 +31,16 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     fontWeight: FontWeight.bold,
                     shadows: [Shadow(color: Colors.black, blurRadius: 2)],
                   )),
-              background: Image.network(
-                widget.event.imageUrl,
-                fit: BoxFit.cover,
-              ),
-            ),
-            actions: [
-              IconButton(
-                icon: Icon(Icons.favorite_border),
-                onPressed: () {
-                  widget.onToggleFavorite(widget.event);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Event added to favorites'),
-                      duration: Duration(seconds: 2),
+              background: widget.event.imageFile != null
+                  ? Image.file(
+                      widget.event.imageFile!,
+                      fit: BoxFit.cover,
+                    )
+                  : Image.network(
+                      widget.event.imageUrl ?? 'https://picsum.photos/seed/${widget.event.title.hashCode}/800/400',
+                      fit: BoxFit.cover,
                     ),
-                  );
-                },
-              ),
-            ],
+            ),
           ),
           SliverToBoxAdapter(
             child: Padding(
@@ -69,24 +63,56 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     widget.event.description,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
-                  SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () {
-                      setState(() {
-                        widget.event.isAttending = !widget.event.isAttending;
-                      });
-                    },
-                    child: Text(widget.event.isAttending ? 'Cancel Attendance' : 'Attend'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.event.isAttending ? Colors.red : Theme.of(context).colorScheme.secondary,
-                      minimumSize: Size(double.infinity, 50),
-                    ),
-                  ),
                 ],
               ),
             ),
           ),
         ],
+      ),
+      bottomNavigationBar: BottomAppBar(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              IconButton(
+                icon: Icon(
+                  isFavorite ? Icons.favorite : Icons.favorite_border,
+                  color: Theme.of(context).colorScheme.secondary,
+                ),
+                onPressed: () {
+                  setState(() {
+                    isFavorite = !isFavorite;
+                  });
+                  widget.onToggleFavorite(widget.event);
+                },
+              ),
+              ElevatedButton(
+                onPressed: () {
+                  setState(() {
+                    widget.event.isAttending = !widget.event.isAttending;
+                  });
+                  if (widget.event.isAttending) {
+                    NotificationService().scheduleEventReminder(widget.event);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('You will receive a reminder for this event')),
+                    );
+                  } else {
+                    NotificationService().cancelEventReminder(widget.event);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Event reminder cancelled')),
+                    );
+                  }
+                },
+                child: Text(widget.event.isAttending ? 'Cancel Attendance' : 'Attend'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: widget.event.isAttending ? Colors.red : Theme.of(context).colorScheme.secondary,
+                  minimumSize: Size(200, 50),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

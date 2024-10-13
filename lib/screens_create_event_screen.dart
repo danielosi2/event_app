@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:event_app/models_event.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class CreateEventScreen extends StatefulWidget {
   final Function(Event) onEventCreated;
@@ -12,139 +14,196 @@ class CreateEventScreen extends StatefulWidget {
 
 class _CreateEventScreenState extends State<CreateEventScreen> {
   final _formKey = GlobalKey<FormState>();
-  String _title = '';
-  DateTime _date = DateTime.now();
-  TimeOfDay _time = TimeOfDay.now();
-  String _location = '';
-  String _description = '';
-  String _imageUrl = '';
+  final _titleController = TextEditingController();
+  final _locationController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  DateTime _selectedDate = DateTime.now();
+  TimeOfDay _selectedTime = TimeOfDay.now();
+  File? _image;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    if (pickedFile != null) {
+      setState(() {
+        _image = File(pickedFile.path);
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Create Event'),
+        elevation: 0,
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
-          padding: EdgeInsets.all(16.0),
+      body: SingleChildScrollView(
+        child: Column(
           children: [
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Event Title',
-                prefixIcon: Icon(Icons.title, color: Theme.of(context).primaryColor),
+            Container(
+              height: 200,
+              width: double.infinity,
+              color: Theme.of(context).primaryColor.withOpacity(0.1),
+              child: InkWell(
+                onTap: _pickImage,
+                child: _image == null
+                    ? Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_photo_alternate, size: 64, color: Theme.of(context).primaryColor),
+                          SizedBox(height: 16),
+                          Text('Add Event Image', style: TextStyle(color: Theme.of(context).primaryColor)),
+                        ],
+                      )
+                    : Image.file(_image!, fit: BoxFit.cover),
               ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an event title';
-                }
-                return null;
-              },
-              onSaved: (value) => _title = value!,
             ),
-            SizedBox(height: 16),
-            _buildDateTimePicker(
-              label: 'Date',
-              value: _date.toString().split(' ')[0],
-              icon: Icons.calendar_today,
-              onTap: () async {
-                final pickedDate = await showDatePicker(
-                  context: context,
-                  initialDate: _date,
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(Duration(days: 365)),
-                );
-                if (pickedDate != null) {
-                  setState(() {
-                    _date = pickedDate;
-                  });
-                }
-              },
-            ),
-            SizedBox(height: 16),
-            _buildDateTimePicker(
-              label: 'Time',
-              value: _time.format(context),
-              icon: Icons.access_time,
-              onTap: () async {
-                final pickedTime = await showTimePicker(
-                  context: context,
-                  initialTime: _time,
-                );
-                if (pickedTime != null) {
-                  setState(() {
-                    _time = pickedTime;
-                  });
-                }
-              },
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Location',
-                prefixIcon: Icon(Icons.location_on, color: Theme.of(context).primaryColor),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter a location';
-                }
-                return null;
-              },
-              onSaved: (value) => _location = value!,
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Event Description',
-                prefixIcon: Icon(Icons.description, color: Theme.of(context).primaryColor),
-              ),
-              maxLines: 3,
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an event description';
-                }
-                return null;
-              },
-              onSaved: (value) => _description = value!,
-            ),
-            SizedBox(height: 16),
-            TextFormField(
-              decoration: InputDecoration(
-                labelText: 'Image URL',
-                prefixIcon: Icon(Icons.image, color: Theme.of(context).primaryColor),
-              ),
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter an image URL';
-                }
-                return null;
-              },
-              onSaved: (value) => _imageUrl = value!,
-            ),
-            SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  _formKey.currentState!.save();
-                  final newEvent = Event(
-                    title: _title,
-                    date: _date,
-                    time: _time,
-                    location: _location,
-                    description: _description,
-                    imageUrl: _imageUrl,
-                  );
-                  widget.onEventCreated(newEvent);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Event created successfully!')),
-                  );
-                  Navigator.pop(context);
-                }
-              },
-              child: Text('Create Event'),
-              style: ElevatedButton.styleFrom(
-                minimumSize: Size(double.infinity, 50),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextFormField(
+                      controller: _titleController,
+                      decoration: InputDecoration(
+                        labelText: 'Event Title',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: Icon(Icons.title),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an event title';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final DateTime? picked = await showDatePicker(
+                                context: context,
+                                initialDate: _selectedDate,
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime.now().add(Duration(days: 365)),
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  _selectedDate = picked;
+                                });
+                              }
+                            },
+                            icon: Icon(Icons.calendar_today),
+                            label: Text('Select Date'),
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                        SizedBox(width: 16),
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            onPressed: () async {
+                              final TimeOfDay? picked = await showTimePicker(
+                                context: context,
+                                initialTime: _selectedTime,
+                              );
+                              if (picked != null) {
+                                setState(() {
+                                  _selectedTime = picked;
+                                });
+                              }
+                            },
+                            icon: Icon(Icons.access_time),
+                            label: Text('Select Time'),
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Selected Date: ${_selectedDate.toString().split(' ')[0]}',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Selected Time: ${_selectedTime.format(context)}',
+                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(height: 16),
+                    TextFormField(
+                      controller: _locationController,
+                      decoration: InputDecoration(
+                        labelText: 'Event Location',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: Icon(Icons.location_on),
+                      ),
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an event location';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 16),
+                    TextFormField(
+                      controller: _descriptionController,
+                      decoration: InputDecoration(
+                        labelText: 'Event Description',
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        prefixIcon: Icon(Icons.description),
+                      ),
+                      maxLines: 5,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter an event description';
+                        }
+                        return null;
+                      },
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          if (_image == null) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text('Please select an image for the event')),
+                            );
+                            return;
+                          }
+                          final newEvent = Event(
+                            title: _titleController.text,
+                            date: _selectedDate,
+                            time: _selectedTime,
+                            location: _locationController.text,
+                            description: _descriptionController.text,
+                            imageFile: _image,
+                          );
+                          await widget.onEventCreated(newEvent);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('Event created successfully!')),
+                          );
+                          Navigator.pop(context);
+                        }
+                      },
+                      child: Text('Create Event'),
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
@@ -153,21 +212,11 @@ class _CreateEventScreenState extends State<CreateEventScreen> {
     );
   }
 
-  Widget _buildDateTimePicker({
-    required String label,
-    required String value,
-    required IconData icon,
-    required VoidCallback onTap,
-  }) {
-    return InkWell(
-      onTap: onTap,
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: Theme.of(context).primaryColor),
-        ),
-        child: Text(value),
-      ),
-    );
+  @override
+  void dispose() {
+    _titleController.dispose();
+    _locationController.dispose();
+    _descriptionController.dispose();
+    super.dispose();
   }
 }
