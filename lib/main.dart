@@ -5,6 +5,7 @@ import 'package:event_app/screens_favorites_screen.dart';
 import 'package:event_app/screens_home_screen.dart';
 import 'package:event_app/screens_profile_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,10 +19,46 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Campus Event Tracker',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
+        primaryColor: Color(0xFF3F51B5),
         colorScheme: ColorScheme.fromSwatch(
-          primarySwatch: Colors.blue,
-          accentColor: Colors.orange,
+          primarySwatch: Colors.indigo,
+          accentColor: Color(0xFF3F51B5),
+        ).copyWith(
+          secondary: Color(0xFF3F51B5),
+          background: Colors.white,
+        ),
+        textTheme: GoogleFonts.poppinsTextTheme(
+          Theme.of(context).textTheme,
+        ),
+        inputDecorationTheme: InputDecorationTheme(
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Color(0xFF3F51B5)),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.grey[300]!),
+          ),
+          filled: true,
+          fillColor: Colors.grey[50],
+        ),
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            foregroundColor: Colors.white,
+            backgroundColor: Color(0xFF3F51B5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+            textStyle: GoogleFonts.poppins(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ),
       ),
       home: MainScreen(),
@@ -56,7 +93,6 @@ class _MainScreenState extends State<MainScreen> {
   ];
 
   List<Event> _favoriteEvents = [];
-  bool _isLoading = false;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -76,69 +112,64 @@ class _MainScreenState extends State<MainScreen> {
     });
   }
 
-  Future<void> _addNewEvent(Event newEvent) async {
-    setState(() {
-      _isLoading = true;
-    });
-
-    // Simulate a network delay
-    await Future.delayed(Duration(seconds: 2));
-
+  void _addNewEvent(Event newEvent) {
     setState(() {
       _events.insert(0, newEvent);
-      _isLoading = false;
-      _selectedIndex = 0; // Switch to the Home screen after adding a new event
     });
-
     NotificationService().showNewEventNotification(newEvent);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+      body: IndexedStack(
+        index: _selectedIndex,
         children: [
-          IndexedStack(
-            index: _selectedIndex,
-            children: [
-              HomeScreen(events: _events, onToggleFavorite: _toggleFavorite),
-              FavoritesScreen(favoriteEvents: _favoriteEvents, onToggleFavorite: _toggleFavorite),
-              CreateEventScreen(onEventCreated: _addNewEvent),
-              ProfileScreen(),
-            ],
-          ),
-          if (_isLoading)
-            Container(
-              color: Colors.black.withOpacity(0.5),
-              child: Center(
-                child: CircularProgressIndicator(),
-              ),
-            ),
+          HomeScreen(events: _events, onToggleFavorite: _toggleFavorite),
+          FavoritesScreen(favoriteEvents: _favoriteEvents, onToggleFavorite: _toggleFavorite),
+          CreateEventScreen(onEventCreated: _addNewEvent),
+          ProfileScreen(),
         ],
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Favorites',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.add),
-            label: 'Create Event',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-        currentIndex: _selectedIndex,
-        selectedItemColor: Theme.of(context).colorScheme.secondary,
-        unselectedItemColor: Colors.grey,
-        onTap: _onItemTapped,
+      bottomNavigationBar: Container(
+        decoration: BoxDecoration(
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.3),
+              spreadRadius: 1,
+              blurRadius: 5,
+              offset: Offset(0, -3),
+            ),
+          ],
+        ),
+        child: BottomNavigationBar(
+          items: const <BottomNavigationBarItem>[
+            BottomNavigationBarItem(
+              icon: Icon(Icons.home_rounded),
+              label: 'Home',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.favorite_rounded),
+              label: 'Favorites',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.add_circle_outline_rounded),
+              label: 'Create',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person_rounded),
+              label: 'Profile',
+            ),
+          ],
+          currentIndex: _selectedIndex,
+          selectedItemColor: Color(0xFF3F51B5),
+          unselectedItemColor: Colors.grey[600],
+          showUnselectedLabels: true,
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: Colors.white,
+          elevation: 0,
+          onTap: _onItemTapped,
+        ),
       ),
     );
   }

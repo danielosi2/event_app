@@ -1,6 +1,7 @@
 import 'package:event_app/models_event.dart';
 import 'package:event_app/notification.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class EventDetailScreen extends StatefulWidget {
   final Event event;
@@ -26,7 +27,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             pinned: true,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(widget.event.title,
-                  style: TextStyle(
+                  style: GoogleFonts.poppins(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     shadows: [Shadow(color: Colors.black, blurRadius: 2)],
@@ -56,12 +57,16 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   SizedBox(height: 16),
                   Text(
                     'Description',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Theme.of(context).colorScheme.secondary),
+                    style: GoogleFonts.poppins(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF3F51B5),
+                    ),
                   ),
                   SizedBox(height: 8),
                   Text(
                     widget.event.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: GoogleFonts.poppins(fontSize: 16),
                   ),
                 ],
               ),
@@ -78,7 +83,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
               IconButton(
                 icon: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: Theme.of(context).colorScheme.secondary,
+                  color: Color(0xFF3F51B5),
                 ),
                 onPressed: () {
                   setState(() {
@@ -104,10 +109,14 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     );
                   }
                 },
-                child: Text(widget.event.isAttending ? 'Cancel Attendance' : 'Attend'),
+                child: Text(
+                  widget.event.isAttending ? 'Cancel Attendance' : 'Attend',
+                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.event.isAttending ? Colors.red : Theme.of(context).colorScheme.secondary,
-                  minimumSize: Size(200, 50),
+                  backgroundColor: widget.event.isAttending ? Colors.red : Color(0xFF3F51B5),
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                 ),
               ),
             ],
@@ -120,13 +129,13 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: Theme.of(context).colorScheme.secondary),
+        Icon(icon, color: Color(0xFF3F51B5)),
         SizedBox(width: 8),
         Text(
           '$label: ',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: GoogleFonts.poppins(fontWeight: FontWeight.bold),
         ),
-        Text(value),
+        Text(value, style: GoogleFonts.poppins()),
       ],
     );
   }

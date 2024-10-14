@@ -29,7 +29,7 @@ class EventCard extends StatelessWidget {
                 children: [
                   Text(
                     event.title,
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   SizedBox(height: 8),
                   Row(
@@ -57,13 +57,6 @@ class EventCard extends StatelessWidget {
                       ),
                     ],
                   ),
-                  SizedBox(height: 8),
-                  Text(
-                    event.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
                 ],
               ),
             ),
@@ -87,13 +80,19 @@ class EventCard extends StatelessWidget {
         height: 150,
         width: double.infinity,
         fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Container(
+            height: 150,
+            color: Colors.grey[300],
+            child: Icon(Icons.error, color: Colors.red),
+          );
+        },
       );
     } else {
-      return Image.network(
-        'https://picsum.photos/seed/${event.title.hashCode}/800/400',
+      return Container(
         height: 150,
-        width: double.infinity,
-        fit: BoxFit.cover,
+        color: Colors.grey[300],
+        child: Icon(Icons.image, color: Colors.grey[400]),
       );
     }
   }
