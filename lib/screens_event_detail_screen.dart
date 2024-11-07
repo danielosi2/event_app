@@ -15,6 +15,13 @@ class EventDetailScreen extends StatefulWidget {
 
 class _EventDetailScreenState extends State<EventDetailScreen> {
   bool isFavorite = false;
+  bool isAttending = false; // To track attendance
+
+  @override
+  void initState() {
+    super.initState();
+    isAttending = widget.event.isAttending; // Initial attendance state from event data
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,6 +32,11 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
             expandedHeight: 300.0,
             floating: false,
             pinned: true,
+            backgroundColor: Color(0xFF3F51B5), // Purple theme background
+            leading: IconButton(
+              icon: Icon(Icons.arrow_back, color: Colors.white), // Back button set to white
+              onPressed: () => Navigator.of(context).pop(),
+            ),
             flexibleSpace: FlexibleSpaceBar(
               title: Text(widget.event.title,
                   style: GoogleFonts.poppins(
@@ -60,7 +72,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                     style: GoogleFonts.poppins(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF3F51B5),
+                      color: Color(0xFF3F51B5), // Using purple theme for headers
                     ),
                   ),
                   SizedBox(height: 8),
@@ -74,16 +86,20 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: BottomAppBar(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+        child: Row(
+          children: [
+            // Heart Icon with border and purple theme
+            Container(
+              decoration: BoxDecoration(
+                border: Border.all(color: Color(0xFF3F51B5)),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: IconButton(
                 icon: Icon(
                   isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: Color(0xFF3F51B5),
+                  color: Color(0xFF3F51B5), // Purple for the heart icon
                 ),
                 onPressed: () {
                   setState(() {
@@ -92,35 +108,47 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
                   widget.onToggleFavorite(widget.event);
                 },
               ),
-              ElevatedButton(
+            ),
+            SizedBox(width: 16), // Spacing between heart icon and button
+
+            // Full-width Button with dynamic color and text
+            Expanded(
+              child: ElevatedButton(
                 onPressed: () {
                   setState(() {
-                    widget.event.isAttending = !widget.event.isAttending;
+                    isAttending = !isAttending;
                   });
-                  if (widget.event.isAttending) {
-                    NotificationService().scheduleEventReminder(widget.event);
+                  if (isAttending) {
+                    NotificationService().scheduleEventReminder(widget.event, context); // Pass context as the second argument
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('You will receive a reminder for this event')),
+                      SnackBar(content: Text('You are now attending this event. Reminder set!')), // Added reminder confirmation
                     );
                   } else {
                     NotificationService().cancelEventReminder(widget.event);
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Event reminder cancelled')),
+                      SnackBar(content: Text('You are no longer attending this event. Reminder cancelled.')), // Added cancellation confirmation
                     );
                   }
                 },
                 child: Text(
-                  widget.event.isAttending ? 'Cancel Attendance' : 'Attend',
-                  style: GoogleFonts.poppins(color: Colors.white, fontSize: 14),
+                  isAttending ? 'Attending' : 'Not Attending', // Dynamic button text
+                  style: GoogleFonts.poppins(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: widget.event.isAttending ? Colors.red : Color(0xFF3F51B5),
-                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  backgroundColor: isAttending ? Colors.red : Color(0xFF3F51B5), // Changes between red (Not Attending) and purple (Attend)
+                  padding: EdgeInsets.symmetric(vertical: 16.0),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30), // Rounded button
+                  ),
+                  elevation: 5, // Shadow effect for the button
                 ),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -129,7 +157,7 @@ class _EventDetailScreenState extends State<EventDetailScreen> {
   Widget _buildInfoRow(IconData icon, String label, String value) {
     return Row(
       children: [
-        Icon(icon, color: Color(0xFF3F51B5)),
+        Icon(icon, color: Color(0xFF3F51B5)), // Purple icons for consistency
         SizedBox(width: 8),
         Text(
           '$label: ',

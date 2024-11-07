@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await NotificationService().init();
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure widgets are initialized
+  await NotificationService().init(); // Initialize the notification service
   runApp(MyApp());
 }
 
@@ -17,6 +17,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Campus Event Tracker',
       theme: ThemeData(
         primaryColor: Color(0xFF3F51B5),
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
           accentColor: Color(0xFF3F51B5),
         ).copyWith(
           secondary: Color(0xFF3F51B5),
-          background: Colors.white,
+          surface: Colors.white,
         ),
         textTheme: GoogleFonts.poppinsTextTheme(
           Theme.of(context).textTheme,
@@ -73,7 +74,7 @@ class MainScreen extends StatefulWidget {
 
 class _MainScreenState extends State<MainScreen> {
   int _selectedIndex = 0;
-  List<Event> _events = [
+  final List<Event> _events = [
     Event(
       title: 'Flutter Workshop',
       date: DateTime.now().add(Duration(days: 2)),
@@ -107,7 +108,7 @@ class _MainScreenState extends State<MainScreen> {
         NotificationService().cancelEventReminder(event);
       } else {
         _favoriteEvents.add(event);
-        NotificationService().scheduleEventReminder(event);
+        NotificationService().scheduleEventReminder(event, context); // Passing context for notification
       }
     });
   }
@@ -116,7 +117,7 @@ class _MainScreenState extends State<MainScreen> {
     setState(() {
       _events.insert(0, newEvent);
     });
-    NotificationService().showNewEventNotification(newEvent);
+    NotificationService().showNewEventNotificationAsReminder(newEvent, context);
   }
 
   @override
